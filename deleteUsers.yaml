@@ -1,0 +1,30 @@
+---
+- hosts: '{{ host }}'
+  user: olimpus
+  gather_facts: no
+  strategy: free
+
+  tasks:
+  - name: Load user by Username and Role
+    include_vars:
+      dir: user/{{ host }}
+      files_matching: {{ username }}.yaml
+    fail:
+      msg: 'There is no {{ username }} username with {{ host }} environment'
+
+  - name: Remove user {{ item.username }}
+    user: name={{ item.username }} state=absent
+    become: yes
+    with_items: '{{users}}'
+
+  - name: Clean sudoers
+    file: state=absent path=/etc/sudoers.d/{{ item.username }}
+    when: 'item.sudo == True'
+    become: yes
+    with_items: '{{users}}'
+
+  - name: Clean dir home
+    file: state=absent path=/home/{{ item.username }}
+    when: 'item.sudo == True'
+    become: yes
+    with_items: '{{users}}'
