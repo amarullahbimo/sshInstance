@@ -7,10 +7,8 @@
   tasks:
   - name: Load user by Username and Role
     include_vars:
-      dir: user/{{ host }}
-      files_matching: {{ username }}.yaml
-    fail:
-      msg: 'There is no {{ username }} username with {{ host }} environment'
+      dir: 'user/{{ host }}'
+      files_matching: '{{ username }}.yaml'
 
   - name: Remove user {{ item.username }}
     user: name={{ item.username }} state=absent
@@ -19,12 +17,12 @@
 
   - name: Clean sudoers
     file: state=absent path=/etc/sudoers.d/{{ item.username }}
-    when: 'item.sudo == True'
+    when: 'item.use_sudo == True'
     become: yes
     with_items: '{{users}}'
 
   - name: Clean dir home
     file: state=absent path=/home/{{ item.username }}
-    when: 'item.sudo == True'
+    when: 'item.use_sudo == True'
     become: yes
     with_items: '{{users}}'

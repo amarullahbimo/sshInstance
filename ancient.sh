@@ -4,11 +4,12 @@ username=$2
 environment=$3
 sudo=$4
 pubkey=$5
-pubkeypath="/opt/infra/ancient/pub_key/${username}.pub"
-userpath="/opt/infra/ancient/user/${environment}/${username}.yaml"
+filePath="/opt/infra/ancient"
+pubkeypath="${filePath}/pub_key/${username}.pub"
+userpath="${filePath}/user/${environment}/${username}.yaml"
 timestamp=`date +"%F_%T"`
-tmppub_key="/opt/infra/ancient/tmp/pub_key/${username}-${timestamp}.pub"
-tmpyaml="/opt/infra/ancient/tmp/user/${environment}/${username}-${timestamp}.yaml"
+tmppub_key="${filePath}/tmp/pub_key/${username}-${timestamp}.pub"
+tmpyaml="${filePath}/tmp/user/${environment}/${username}-${timestamp}.yaml"
 
 function createFile() {
   if [ ! -z "${pubkey}" ]; then
@@ -37,22 +38,17 @@ users:
 EOF
 }
 
-function deleteFile() {
-  mv ${pubkeypath} ${tmppub_key}
-  mv ${userpath} ${tmpyaml}
-}
-
 function createUser() {
   local my_username=$1
   if [ -z "${my_username}" ]; then
-    ansible-playbook -i hosts createUsers.yaml --extra-vars "host=${environment}"
+    ansible-playbook -i ${filePath}/hosts ${filePath}/createUsers.yaml --extra-vars "host=${environment}"
   else
-    ansible-playbook -i hosts createUsers.yaml --extra-vars "host=${environment} username=${my_username}"
+    ansible-playbook -i ${filePath}/hosts ${filePath}/createUsers.yaml --extra-vars "host=${environment} username=${my_username}"
   fi
 }
 
 function deleteUser() {
-  ansible-playbook -i hosts deleteUsers.yaml --extra-vars "host=${environment} username=${username}"
+  ansible-playbook -i ${filePath}/hosts ${filePath}/deleteUsers.yaml --extra-vars "host=${environment} username=${username}" && mv ${pubkeypath} ${tmppub_key} && mv ${userpath} ${tmpyaml}
 }
 
 #============================
@@ -65,12 +61,11 @@ case ${action} in
     createFile
     createUser ${username}
     ;;
-  run)
+  add)
     createUser
     ;;
   delete)
     deleteUser
-    deleteFile
     ;;
   *)
     echo "${action} parameter is NOT FOUND read wisely"

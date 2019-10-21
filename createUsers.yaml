@@ -3,15 +3,12 @@
   user: olimpus
   gather_facts: no
   strategy: free
-
   tasks:
   - name: Load All Selected User YAML
     include_vars:
-      dir: user/{{ host }}
+      dir: 'user/{{ host }}'
       ignore_unknown_extensions: True
       extensions: [yaml]
-    fail:
-      msg: 'I cannot found {{ host }} environment'
     when: username is not defined
 
   - name: Load Devops User YAML
@@ -23,10 +20,8 @@
 
   - name: Load user by Username and Role
     include_vars:
-      dir: user/{{ host }}
-      files_matching: {{ username }}.yaml
-    fail:
-      msg: 'There are no {{ username }} with {{ host }} environment'
+      dir: 'user/{{ host }}'
+      files_matching: '{{ username }}.yaml'
     when: username is defined
 
   - name: Add users | create users, shell, home dirs
